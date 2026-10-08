@@ -1,0 +1,23 @@
+{
+  "packageId": "app.wrsgempa.monitor",
+  "host": "wrsgempa.netlify.app",
+  "name": "WRS Gempa",
+  "launcherName": "WRS Gempa",
+  "display": "standalone",
+  "themeColor": "#070b13",
+  "navigationColor": "#070b13",
+  "navigationDividerColor": "#070b13",
+  "backgroundColor": "#070b13",
+  "startUrl": "/",
+  "iconUrl": "https://wrsgempa.netlify.app/icons/icon-512.png",
+  "maskableIconUrl": "https://wrsgempa.netlify.app/icons/icon-512.png",
+  "enableNotifications": true,
+  "splashScreenFadeOutDuration": 300,
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [
+    {"name":"Gempa terbaru","short_name":"Terbaru","url":"/","icon":"https://wrsgempa.netlify.app/icons/icon-192.png"},
+    {"name":"Riwayat gempa","short_name":"Riwayat","url":"/?view=history","icon":"https://wrsgempa.netlify.app/icons/icon-192.png"},
+    {"name":"Peringatan tsunami","short_name":"Tsunami","url":"/?view=tsunami","icon":"https://wrsgempa.netlify.app/icons/icon-192.png"}
+  ]
+}
