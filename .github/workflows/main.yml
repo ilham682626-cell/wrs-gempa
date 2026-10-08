@@ -1,0 +1,59 @@
+name: Build WRS Gempa Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install Bubblewrap
+        run: npm install -g @bubblewrap/cli
+
+      - name: Prepare Android project
+        run: |
+          rm -rf android
+          mkdir -p android
+          cp twa-manifest.json android/twa-manifest.json
+
+          cd android
+
+          bubblewrap init \
+            --manifest=./twa-manifest.json \
+            --directory=.
+
+      - name: Build Android APK
+        working-directory: android
+        run: |
+          bubblewrap build --skipPwaValidation
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: WRS-Gempa-Android-Test
+          path: |
+            android/app-release-signed.apk
+            android/app-release-unsigned.apk
+            android/*.aab
+          if-no-files-found: warn
