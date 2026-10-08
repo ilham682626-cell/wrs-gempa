@@ -31,29 +31,73 @@ jobs:
       - name: Install Bubblewrap
         run: npm install -g @bubblewrap/cli
 
+      - name: Configure Bubblewrap environment
+        run: |
+          bubblewrap updateConfig \
+            --jdkPath="$JAVA_HOME" \
+            --androidSdkPath="$ANDROID_HOME"
+
       - name: Prepare TWA project
         run: |
           rm -rf android
           mkdir -p android
 
-          bubblewrap init \
-            --manifest=https://wrsgempa.netlify.app/manifest.json \
-            --directory=android \
-            --skipPwaValidation \
-            --acceptTerms
+          cp twa-manifest.json android/twa-manifest.json
 
-      - name: Build Android APK
+          node <<'NODE'
+          const fs = require("fs");
+          const path = require("path");
+          const {
+            TwaManifest,
+            TwaGenerator
+          } = require("@bubblewrap/core");
+
+          (async () => {
+            const dir = path.resolve("android");
+            const manifestPath = path.join(dir, "twa-manifest.json");
+
+            const manifest = await TwaManifest.fromFile(manifestPath);
+
+            manifest.generatorApp = "WRS Gempa";
+
+            const generator = new TwaGenerator();
+
+            await generator.createTwaProject(
+              dir,
+              manifest,
+              console,
+              () => {}
+            );
+
+            await manifest.saveToFile(manifestPath);
+
+            fs.writeFileSync(
+              path.join(dir, "manifest-checksum.txt"),
+              "generated-by-github-actions"
+            );
+
+            console.log("TWA project generated successfully.");
+          })().catch(error => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+
+      - name: Build unsigned APK
         working-directory: android
         run: |
           bubblewrap build \
-            --skipPwaValidation
+            --skipPwaValidation \
+            --skipSigning
 
       - name: Find APK
         run: |
-          echo "=== APK FILES ==="
-          find android -type f \( -name "*.apk" -o -name "*.aab" \) -print
+          echo "=== ANDROID OUTPUT ==="
+          find android -type f \
+            \( -name "*.apk" -o -name "*.aab" \) \
+            -print
 
-      - name: Upload Android files
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: WRS-Gempa-Android-Test
